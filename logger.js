@@ -16,7 +16,15 @@ let consoleOptions = {
 let papertrailOptions = {
     host: 'SOME_HOST',
     level: 'debug',
-    port: 12345
+    port: 12345,
+    program: pjson.name,
+    inlineMeta: true,
+    logFormat: (level, message) => {
+        if(level === 'error') {
+            return `<<<ERROR>>> ${message}`;
+        }
+        return `${level} - ${message}`;
+    }
 };
 
 if (process.env.NODE_ENV === 'local') {
@@ -88,3 +96,10 @@ function getStackinfo(stackIndex) {
         }
     }
 }
+
+process.on('uncaughtException', function(er) {
+    let output = er.stack.split('\n').join(' - ');
+    logger.error(output);
+})
+
+logger.exitOnError = false;
